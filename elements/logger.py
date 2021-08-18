@@ -123,11 +123,14 @@ class TensorBoardOutput:
       video = np.clip(255 * video, 0, 255).astype(np.uint8)
     try:
       T, H, W, C = video.shape
-      summary = tf1.Summary()
-      image = tf1.Summary.Image(height=H, width=W, colorspace=C)
-      image.encoded_image_string = encode_gif(video, self._fps)
-      summary.value.add(tag=name, image=image)
-      tf.summary.experimental.write_raw_pb(summary.SerializeToString(), step)
+      div = 1 if C % 3 != 0 else 3
+      for component in range(C // div):
+        summary = tf1.Summary()
+        image = tf1.Summary.Image(height=H, width=W, colorspace=C)
+        image.encoded_image_string = encode_gif(video[..., component * div: (component + 1) * div], self._fps)
+        component_id = '' if component == 0 else str(component)
+        summary.value.add(tag=f'{name}{component_id}', image=image)
+        tf.summary.experimental.write_raw_pb(summary.SerializeToString(), step)
     except (IOError, OSError) as e:
       print('GIF summaries require ffmpeg in $PATH.', e)
       tf.summary.image(name, video, step)
