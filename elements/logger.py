@@ -126,7 +126,7 @@ class TensorBoardOutput:
       div = 1 if C % 3 != 0 else 3
       for component in range(C // div):
         summary = tf1.Summary()
-        image = tf1.Summary.Image(height=H, width=W, colorspace=C)
+        image = tf1.Summary.Image(height=H, width=W, colorspace=div)
         image.encoded_image_string = encode_gif(video[..., component * div: (component + 1) * div], self._fps)
         component_id = '' if component == 0 else str(component)
         summary.value.add(tag=f'{name}{component_id}', image=image)
